@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>바이브코딩으로 쿠폰 만들기 🎵</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg-deep:#0a0c10;--bg-surface:#12151c;--bg-card:#181c25;--bg-elevated:#1e2330;--bg-hover:#252a36;
+--border:#2a2f3e;--border-subtle:#1f2433;
+--text-primary:#e8eaf0;--text-secondary:#8b90a0;--text-muted:#555b6e;
+--accent-blue:#3b82f6;--accent-blue-dim:#2563eb;--accent-blue-glow:rgba(59,130,246,.15);
+--accent-green:#22c55e;--accent-green-dim:rgba(34,197,94,.12);
+--accent-amber:#f59e0b;--accent-amber-dim:rgba(245,158,11,.12);
+--accent-red:#ef4444;--accent-red-dim:rgba(239,68,68,.12);
+--accent-purple:#a78bfa;--accent-purple-dim:rgba(167,139,250,.12);
+--accent-cyan:#06b6d4;
+--radius-sm:6px;--radius-md:10px;--radius-lg:16px;
+--font-sans:'Noto Sans KR',sans-serif;--font-mono:'JetBrains Mono',monospace;
+--transition:.2s cubic-bezier(.4,0,.2,1);
+}
+html{font-size:14px;scroll-behavior:smooth}
+body{font-family:var(--font-sans);background:var(--bg-deep);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(59,130,246,.08) 0%,transparent 70%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--accent-blue-glow);border:1px solid rgba(59,130,246,.2);border-radius:20px;font-size:12px;color:var(--accent-blue);font-weight:500;margin-bottom:24px;animation:fadeIn .6s ease}
+.hero-badge .pulse{width:6px;height:6px;background:var(--accent-blue);border-radius:50%;animation:pulse 2s infinite}
+.hero-title{font-size:clamp(32px,5vw,52px);font-weight:900;letter-spacing:-1.5px;line-height:1.2;margin-bottom:16px;animation:fadeIn .6s ease .1s both}
+.hero-title .gradient{background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:var(--text-secondary);max-width:600px;line-height:1.6;margin-bottom:40px;animation:fadeIn .6s ease .2s both}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;animation:fadeIn .6s ease .3s both}
+.hero-btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:var(--radius-md);font-size:15px;font-weight:600;cursor:pointer;transition:all .3s;text-decoration:none;border:none;font-family:var(--font-sans)}
+.hero-btn.primary{background:var(--accent-blue);color:#fff;box-shadow:0 4px 20px rgba(59,130,246,.3)}
+.hero-btn.primary:hover{background:var(--accent-blue-dim);transform:translateY(-2px);box-shadow:0 8px 30px rgba(59,130,246,.4)}
+.hero-btn.secondary{background:var(--bg-card);color:var(--text-primary);border:1px solid var(--border)}
+.hero-btn.secondary:hover{border-color:var(--accent-blue);background:var(--bg-elevated)}
+.scroll-hint{position:absolute;bottom:40px;color:var(--text-muted);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:8px;animation:bounce 2s infinite}
+
+/* STEPS SECTION */
+.section{padding:80px 24px;max-width:1000px;margin:0 auto}
+.section-label{font-size:11px;font-weight:600;color:var(--accent-blue);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px}
+.section-title{font-size:28px;font-weight:800;letter-spacing:-0.5px;margin-bottom:12px}
+.section-desc{font-size:14px;color:var(--text-secondary);margin-bottom:48px;max-width:600px}
+
+/* STEP CARDS */
+.steps{display:flex;flex-direction:column;gap:24px}
+.step-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;transition:all .3s}
+.step-card:hover{border-color:var(--accent-blue);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.step-card.done{opacity:.7}
+.step-card.done .step-status{background:var(--accent-green-dim);color:var(--accent-green)}
+.step-header{display:flex;align-items:center;gap:16px;padding:20px 24px}
+.step-number{width:44px;height:44px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;font-family:var(--font-mono);flex-shrink:0}
+.step-number.blue{background:var(--accent-blue-glow);color:var(--accent-blue)}
+.step-number.green{background:var(--accent-green-dim);color:var(--accent-green)}
+.step-number.amber{background:var(--accent-amber-dim);color:var(--accent-amber)}
+.step-number.purple{background:var(--accent-purple-dim);color:var(--accent-purple)}
+.step-number.cyan{background:rgba(6,182,212,.12);color:var(--accent-cyan)}
+.step-number.red{background:var(--accent-red-dim);color:var(--accent-red)}
+.step-info{flex:1}
+.step-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text-secondary);line-height:1.5}
+.step-status{padding:4px 10px;border-radius:8px;font-size:10px;font-weight:600;background:var(--bg-elevated);color:var(--text-muted);white-space:nowrap}
+.step-status.ready{background:var(--accent-blue-glow);color:var(--accent-blue)}
+.step-status.wip{background:var(--accent-amber-dim);color:var(--accent-amber)}
+.step-arrow{color:var(--text-muted);font-size:18px;transition:transform .2s;padding-right:4px}
+.step-card:hover .step-arrow{transform:translateX(4px);color:var(--accent-blue)}
+
+/* STEP DETAIL (expandable) */
+.step-detail{display:none;padding:0 24px 20px;border-top:1px solid var(--border-subtle)}
+.step-detail.open{display:block}
+.step-detail-inner{padding-top:16px}
+.detail-section{margin-bottom:16px}
+.detail-label{font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.detail-text{font-size:13px;color:var(--text-secondary);line-height:1.7}
+.detail-text strong{color:var(--text-primary);font-weight:600}
+.prompt-box{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;font-size:12px;font-family:var(--font-mono);color:var(--accent-cyan);line-height:1.6;position:relative;margin-top:8px}
+.prompt-box::before{content:'PROMPT';position:absolute;top:-8px;left:12px;background:var(--bg-card);padding:0 6px;font-size:8px;font-weight:700;color:var(--text-muted);letter-spacing:1px}
+.copy-btn{position:absolute;top:8px;right:8px;padding:4px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);font-size:10px;cursor:pointer;font-family:var(--font-sans);transition:var(--transition)}
+.copy-btn:hover{color:var(--accent-blue);border-color:var(--accent-blue)}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag-item{padding:3px 10px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:4px;font-size:11px;color:var(--text-secondary)}
+
+/* PREVIEW SECTION */
+.preview-section{padding:60px 24px;max-width:1000px;margin:0 auto}
+.preview-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);overflow:hidden}
+.preview-header{padding:16px 20px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between}
+.preview-dots{display:flex;gap:6px}
+.preview-dot{width:10px;height:10px;border-radius:50%;background:var(--border)}
+.preview-dot.r{background:#ef4444}.preview-dot.y{background:#f59e0b}.preview-dot.g{background:#22c55e}
+.preview-title{font-size:11px;color:var(--text-muted);font-family:var(--font-mono)}
+.preview-body{padding:0;height:500px;overflow:hidden;position:relative}
+.preview-body iframe{width:100%;height:100%;border:none;transform-origin:top left}
+.preview-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,var(--bg-card));pointer-events:none}
+.preview-cta{text-align:center;padding:20px;border-top:1px solid var(--border-subtle)}
+.preview-cta a{color:var(--accent-blue);font-size:13px;font-weight:600;text-decoration:none}
+.preview-cta a:hover{text-decoration:underline}
+
+/* FOOTER */
+.footer{text-align:center;padding:60px 24px 40px;color:var(--text-muted);font-size:12px}
+.footer-logo{font-size:20px;font-weight:800;margin-bottom:8px;color:var(--text-secondary)}
+.footer a{color:var(--accent-blue);text-decoration:none}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+.hero{padding:40px 20px}
+.section{padding:60px 20px}
+.step-header{padding:16px}
+.step-number{width:36px;height:36px;font-size:15px}
+.hero-actions{flex-direction:column;width:100%}
+.hero-btn{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+<div class="hero-badge"><span class="pulse"></span> Claude Code + 바이브코딩</div>
+<h1 class="hero-title">
+<span class="gradient">바이브코딩</span>으로<br>쿠폰 어드민 만들기
+</h1>
+<p class="hero-sub">
+Claude Code와 대화하면서 쏘카 쿠폰 관리 시스템을 만들어봤습니다.<br>
+코드 한 줄 안 짜고, 대화만으로 완성한 과정을 소개합니다.
+</p>
+<div class="hero-actions">
+<a href="#steps" class="hero-btn primary">만드는 과정 보기 ↓</a>
+<a href="index.html" class="hero-btn secondary">완성된 결과물 보기 →</a>
+</div>
+<div class="scroll-hint">
+<span>아래로 스크롤</span>
+<span>↓</span>
+</div>
+</section>
+
+<!-- STEPS -->
+<section class="section" id="steps">
+<div class="section-label">Process</div>
+<div class="section-title">6단계로 완성하기</div>
+<div class="section-desc">각 단계를 클릭하면 실제 사용한 프롬프트와 상세 내용을 볼 수 있어요.</div>
+
+<div class="steps">
+
+<!-- Step 1 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number blue">1</div>
+<div class="step-info">
+<div class="step-title">요구사항 정리하기</div>
+<div class="step-desc">쿠폰 어드민에 필요한 기능과 화면을 Claude에게 설명합니다</div>
+</div>
+<span class="step-status done" style="background:var(--accent-green-dim);color:var(--accent-green)">완료</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+쏘카 쿠폰 어드민 페이지를 만들어줘. 정책 관리, 발행 요청, 사용 현황, 충돌 감지, 변경 이력 페이지가 필요해. 다크 테마로 만들어줘.
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">핵심 포인트</div>
+<div class="detail-text">
+<strong>구체적으로 말할수록 좋아요.</strong> "쿠폰 관리 페이지 만들어줘"보다 페이지 구성, 필요한 데이터, 디자인 스타일을 함께 알려주면 훨씬 정확한 결과물이 나옵니다.
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">포함된 기능</div>
+<div class="tag-list">
+<span class="tag-item">정책 목록 테이블</span>
+<span class="tag-item">발행 요청 폼</span>
+<span class="tag-item">사용 현황 통계</span>
+<span class="tag-item">충돌 감지 카드</span>
+<span class="tag-item">변경 이력 타임라인</span>
+<span class="tag-item">사이드바 네비게이션</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Step 2 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number green">2</div>
+<div class="step-info">
+<div class="step-title">디자인 시스템 잡기</div>
+<div class="step-desc">색상, 폰트, 컴포넌트 스타일을 정의합니다</div>
+</div>
+<span class="step-status done" style="background:var(--accent-green-dim);color:var(--accent-green)">완료</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+다크 테마로 만들어줘. 배경은 거의 검정에 가깝게, 카드는 약간 밝게. 파란색을 메인 강조색으로, 상태별로 초록/노랑/빨강 쓰고. 폰트는 Noto Sans KR + JetBrains Mono.
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">적용된 디자인 토큰</div>
+<div class="detail-text">
+<strong>5단계 배경 계층:</strong> #0a0c10 → #12151c → #181c25 → #1e2330 → #252a36<br>
+<strong>상태 색상:</strong> 파랑(정보) · 초록(성공) · 노랑(경고) · 빨강(에러) · 보라(정보)<br>
+<strong>폰트:</strong> Noto Sans KR (본문) + JetBrains Mono (숫자, 코드)
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Step 3 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number amber">3</div>
+<div class="step-info">
+<div class="step-title">정책 관리 페이지 만들기</div>
+<div class="step-desc">통계 카드, 알림 바, 필터, 테이블을 포함한 메인 페이지</div>
+</div>
+<span class="step-status done" style="background:var(--accent-green-dim);color:var(--accent-green)">완료</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+정책 관리 페이지에 상단에 통계 카드 4개 (활성 정책, 발행량, Cap 임박, 자동 중지), 경고 알림 바, 그리고 테이블에는 정책명, 유형, 상태, Cap 진행바, 적용 요일, 기간, 버전을 보여줘. 모쿠폰-자쿠폰 계층 구조도 표현해줘.
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">만들어진 컴포넌트</div>
+<div class="tag-list">
+<span class="tag-item">통계 카드 (상단 컬러 라인)</span>
+<span class="tag-item">경고/위험 알림 바</span>
+<span class="tag-item">검색 + 필터 셀렉트</span>
+<span class="tag-item">Cap 프로그레스 바</span>
+<span class="tag-item">요일 칩</span>
+<span class="tag-item">부모-자식 행 구조</span>
+<span class="tag-item">페이지네이션</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Step 4 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number purple">4</div>
+<div class="step-info">
+<div class="step-title">발행 요청 폼 만들기</div>
+<div class="step-desc">9개 섹션의 쿠폰 생성 폼 — 접기/펼치기, 차량 검색, 요일 선택</div>
+</div>
+<span class="step-status done" style="background:var(--accent-green-dim);color:var(--accent-green)">완료</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+쿠폰 발행 요청 폼을 만들어줘. 기본 정보, 발행·Cap 설정, 기간·요일·시간, 차종·차량, 존·지역, 운행 타입, 대상·타겟팅, 가격제·추가설정, 알림·연동 — 총 9개 섹션. 각 섹션은 접기/펼치기 가능하게. 차종은 태그 검색으로, 요일은 버튼으로 선택.
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">인터랙션 요소</div>
+<div class="tag-list">
+<span class="tag-item">섹션 접기/펼치기</span>
+<span class="tag-item">할인 유형별 단위 변경</span>
+<span class="tag-item">요일 토글 버튼</span>
+<span class="tag-item">차종 검색 + 태그 추가</span>
+<span class="tag-item">토글 스위치</span>
+<span class="tag-item">Cap 자동중지 설정</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Step 5 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number cyan">5</div>
+<div class="step-info">
+<div class="step-title">충돌 감지 & 이력 페이지</div>
+<div class="step-desc">정책 간 충돌 경고 카드와 변경 이력 타임라인</div>
+</div>
+<span class="step-status done" style="background:var(--accent-green-dim);color:var(--accent-green)">완료</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+충돌 감지 페이지 — 조건 중복(심각), 매출 잠식(주의), 레거시 간섭(주의) 3개 충돌을 카드로 보여줘. 심각도 배지 포함. 변경 이력은 Cap 초과, 수정, 생성, 종료 유형별 아이콘과 타임스탬프로.
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">핵심 포인트</div>
+<div class="detail-text">
+충돌 카드는 <strong>심각도에 따라 테두리 색상</strong>이 달라져요 (빨강=심각, 노랑=주의). 이력 아이템은 <strong>유형별 아이콘 색상</strong>으로 직관적 구분 (초록=생성, 파랑=수정, 노랑=Cap, 빨강=중지).
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Step 6 -->
+<div class="step-card" onclick="toggleStep(this)">
+<div class="step-header">
+<div class="step-number red">6</div>
+<div class="step-info">
+<div class="step-title">배포하기</div>
+<div class="step-desc">GitHub Pages로 배포해서 누구나 볼 수 있게 공유</div>
+</div>
+<span class="step-status ready">바로 가능</span>
+<span class="step-arrow">→</span>
+</div>
+<div class="step-detail">
+<div class="step-detail-inner">
+<div class="detail-section">
+<div class="detail-label">이렇게 말했어요</div>
+<div class="prompt-box">
+git에 저장하고 배포해줘
+<button class="copy-btn" onclick="event.stopPropagation();copyText(this)">복사</button>
+</div>
+</div>
+<div class="detail-section">
+<div class="detail-label">배포 과정</div>
+<div class="detail-text">
+<strong>1.</strong> GitHub 레포 생성 (socar-coupon-admin)<br>
+<strong>2.</strong> HTML 파일 커밋 & 푸시<br>
+<strong>3.</strong> GitHub Pages 활성화<br>
+<strong>4.</strong> 링크 공유 — 끝!
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- PREVIEW -->
+<section class="preview-section" id="preview">
+<div class="section-label">Result</div>
+<div class="section-title">완성된 결과물</div>
+<div class="section-desc">코드 한 줄 안 짜고 대화만으로 만든 쿠폰 어드민입니다.</div>
+
+<div class="preview-card">
+<div class="preview-header">
+<div class="preview-dots">
+<span class="preview-dot r"></span>
+<span class="preview-dot y"></span>
+<span class="preview-dot g"></span>
+</div>
+<span class="preview-title">socar-coupon-admin</span>
+</div>
+<div class="preview-body">
+<iframe src="index.html" loading="lazy"></iframe>
+<div class="preview-overlay"></div>
+</div>
+<div class="preview-cta">
+<a href="index.html">전체 화면으로 보기 →</a>
+</div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+<div class="footer-logo">SOCAR</div>
+<p>바이브코딩으로 만든 쿠폰 어드민 프로토타입</p>
+<p style="margin-top:8px">Made with <a href="https://claude.ai">Claude Code</a> by 레몬 (사업기획팀)</p>
+</footer>
+
+<script>
+function toggleStep(card) {
+  const detail = card.querySelector('.step-detail');
+  const wasOpen = detail.classList.contains('open');
+
+  // close all
+  document.querySelectorAll('.step-detail').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.step-card').forEach(c => c.style.borderColor = '');
+
+  if (!wasOpen) {
+    detail.classList.add('open');
+    card.style.borderColor = 'var(--accent-blue)';
+  }
+}
+
+function copyText(btn) {
+  const box = btn.closest('.prompt-box');
+  const text = box.childNodes[0].textContent.trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '복사됨!';
+    setTimeout(() => btn.textContent = '복사', 1500);
+  });
+}
+
+// Intersection Observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.animation = 'fadeIn .5s ease forwards';
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.step-card, .preview-card').forEach(el => {
+  el.style.opacity = '0';
+  observer.observe(el);
+});
+</script>
+</body>
+</html>
