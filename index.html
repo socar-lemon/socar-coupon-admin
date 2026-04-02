@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>쏘카 쿠폰 어드민 — To-Be</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg-deep:#0a0c10;--bg-surface:#12151c;--bg-card:#181c25;--bg-elevated:#1e2330;--bg-hover:#252a36;
+--border:#2a2f3e;--border-subtle:#1f2433;
+--text-primary:#e8eaf0;--text-secondary:#8b90a0;--text-muted:#555b6e;
+--accent-blue:#3b82f6;--accent-blue-dim:#2563eb;--accent-blue-glow:rgba(59,130,246,.15);
+--accent-green:#22c55e;--accent-green-dim:rgba(34,197,94,.12);
+--accent-amber:#f59e0b;--accent-amber-dim:rgba(245,158,11,.12);
+--accent-red:#ef4444;--accent-red-dim:rgba(239,68,68,.12);
+--accent-purple:#a78bfa;--accent-purple-dim:rgba(167,139,250,.12);
+--accent-cyan:#06b6d4;
+--radius-sm:6px;--radius-md:10px;
+--font-sans:'Noto Sans KR',sans-serif;--font-mono:'JetBrains Mono',monospace;
+--transition:.2s cubic-bezier(.4,0,.2,1);
+}
+html{font-size:13px}
+body{font-family:var(--font-sans);background:var(--bg-deep);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.app{display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:220px;background:var(--bg-surface);border-right:1px solid var(--border-subtle);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:var(--accent-blue);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;font-family:var(--font-mono)}
+.logo-text{font-size:14px;font-weight:700}.logo-sub{font-size:9px;color:var(--text-muted);font-weight:500;letter-spacing:1px;text-transform:uppercase}
+.sidebar-nav{padding:10px 6px;flex:1;overflow-y:auto}
+.nav-section{margin-bottom:16px}
+.nav-section-title{font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.2px;padding:5px 10px;margin-bottom:2px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:12px;color:var(--text-secondary);position:relative}
+.nav-item:hover{background:var(--bg-hover);color:var(--text-primary)}
+.nav-item.active{background:var(--accent-blue-glow);color:var(--accent-blue);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:14px;background:var(--accent-blue);border-radius:0 3px 3px 0}
+.nav-item svg{width:15px;height:15px;opacity:.6;flex-shrink:0}.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--accent-red);color:#fff;font-size:9px;font-weight:600;padding:1px 5px;border-radius:10px;font-family:var(--font-mono)}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border-subtle)}
+.user-info{display:flex;align-items:center;gap:8px}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent-blue),var(--accent-purple));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.user-name{font-size:12px;font-weight:500}.user-role{font-size:10px;color:var(--text-muted)}
+
+/* MAIN */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column}
+.topbar{height:50px;background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.breadcrumb{font-size:12px;color:var(--text-muted)}.breadcrumb span{color:var(--text-primary);font-weight:500}
+.topbar-right{display:flex;gap:8px}
+.topbar-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-size:11px;font-weight:500;transition:var(--transition);font-family:var(--font-sans)}
+.topbar-btn:hover{border-color:var(--text-muted);color:var(--text-primary)}
+.topbar-btn.primary{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}
+.topbar-btn svg{width:13px;height:13px}
+
+.content{padding:24px;flex:1}
+
+/* PAGE */
+.page{display:none}.page.active{display:block}
+.page-header{margin-bottom:24px}
+.page-title{font-size:20px;font-weight:700;letter-spacing:-.5px;margin-bottom:4px}
+.page-desc{font-size:12px;color:var(--text-muted)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px 16px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:2px}
+.stat-card.blue::after{background:var(--accent-blue)}.stat-card.green::after{background:var(--accent-green)}.stat-card.amber::after{background:var(--accent-amber)}.stat-card.red::after{background:var(--accent-red)}
+.stat-label{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-value{font-size:22px;font-weight:700;font-family:var(--font-mono);letter-spacing:-1px}
+.stat-sub{font-size:10px;color:var(--text-muted);margin-top:3px}.stat-sub .up{color:var(--accent-green)}.stat-sub .down{color:var(--accent-red)}
+
+/* ALERT */
+.alert-bar{border-radius:var(--radius-md);padding:10px 16px;margin-bottom:12px;display:flex;align-items:center;gap:8px;font-size:12px}
+.alert-bar svg{width:16px;height:16px;flex-shrink:0}
+.alert-bar .alert-text{flex:1}.alert-bar strong{font-weight:600}
+.alert-bar.warn{background:var(--accent-amber-dim);border:1px solid rgba(245,158,11,.25);color:var(--accent-amber)}
+.alert-bar.danger{background:var(--accent-red-dim);border:1px solid rgba(239,68,68,.25);color:var(--accent-red)}
+.alert-action{font-size:11px;font-weight:600;padding:4px 10px;border-radius:var(--radius-sm);cursor:pointer;border:none;font-family:var(--font-sans);white-space:nowrap;transition:var(--transition);background:rgba(255,255,255,.1);color:inherit}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border-subtle);margin-bottom:20px}
+.tab{padding:8px 16px;font-size:12px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:var(--transition)}
+.tab:hover{color:var(--text-secondary)}.tab.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue)}
+.tab-count{margin-left:5px;font-size:10px;font-family:var(--font-mono);background:var(--bg-elevated);padding:1px 5px;border-radius:8px}
+.tab.active .tab-count{background:var(--accent-blue-glow);color:var(--accent-blue)}
+
+/* FILTER */
+.filter-bar{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.filter-search{flex:1;max-width:280px;position:relative}
+.filter-search input{width:100%;padding:7px 10px 7px 32px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-family:var(--font-sans);outline:none;transition:var(--transition)}
+.filter-search input::placeholder{color:var(--text-muted)}.filter-search input:focus{border-color:var(--accent-blue)}
+.filter-search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:14px;height:14px;color:var(--text-muted)}
+.filter-select{padding:7px 28px 7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:11px;font-family:var(--font-sans);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23555b6e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;cursor:pointer;outline:none}
+
+/* TABLE */
+.table-wrap{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead th{padding:9px 14px;text-align:left;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border-subtle);transition:var(--transition);cursor:pointer}
+tbody tr:last-child{border-bottom:none}tbody tr:hover{background:var(--bg-hover)}
+tbody td{padding:10px 14px;font-size:12px;vertical-align:middle}
+.policy-name{font-weight:600;display:flex;align-items:center;gap:7px}
+.parent-icon{width:16px;height:16px;background:var(--accent-purple-dim);color:var(--accent-purple);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:var(--font-mono);flex-shrink:0}
+.policy-id{font-family:var(--font-mono);font-size:10px;color:var(--text-muted)}
+.badge{display:inline-flex;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:500;white-space:nowrap}
+.badge.active{background:var(--accent-green-dim);color:var(--accent-green)}
+.badge.paused{background:var(--accent-amber-dim);color:var(--accent-amber)}
+.badge.ended{background:rgba(107,114,128,.12);color:#6b7280}
+.badge.cap-warn{background:var(--accent-red-dim);color:var(--accent-red)}
+.badge.pending{background:var(--accent-purple-dim);color:var(--accent-purple)}
+.cap-bar{display:flex;align-items:center;gap:6px}
+.cap-progress{width:60px;height:3px;background:var(--bg-elevated);border-radius:2px;overflow:hidden}
+.cap-fill{height:100%;border-radius:2px}
+.cap-fill.safe{background:var(--accent-green)}.cap-fill.warn{background:var(--accent-amber)}.cap-fill.danger{background:var(--accent-red)}
+.cap-text{font-family:var(--font-mono);font-size:10px;color:var(--text-muted)}
+.day-chips{display:flex;gap:2px}
+.day-chip{width:20px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;background:var(--bg-elevated);color:var(--text-muted)}
+.day-chip.on{background:var(--accent-blue-glow);color:var(--accent-blue)}.day-chip.weekend.on{background:var(--accent-red-dim);color:var(--accent-red)}
+.version-tag{font-family:var(--font-mono);font-size:10px;color:var(--accent-purple);background:var(--accent-purple-dim);padding:2px 6px;border-radius:3px}
+.table-footer{padding:10px 14px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border-subtle);font-size:11px;color:var(--text-muted)}
+.pagination{display:flex;gap:3px}
+.page-btn{width:26px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:11px;font-family:var(--font-mono);transition:var(--transition)}
+.page-btn.active{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}
+
+/* CHILD ROW */
+.child-row{background:rgba(6,182,212,.02)}.child-row td:first-child{padding-left:24px}
+.child-indent{display:flex;align-items:center;gap:5px;padding-left:20px;font-weight:500;color:var(--text-secondary)}
+.child-line{width:12px;height:1px;background:var(--border);flex-shrink:0}
+
+/* ═══ FORM SYSTEM ═══ */
+.form-page{max-width:960px}
+.form-section{margin-bottom:24px;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);overflow:hidden}
+.form-section-header{padding:12px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
+.form-section-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.section-badge{font-size:8px;font-weight:700;padding:2px 5px;border-radius:3px;background:var(--accent-blue-glow);color:var(--accent-blue);font-family:var(--font-mono)}
+.section-badge.new{background:var(--accent-green-dim);color:var(--accent-green)}
+.section-badge.removed{background:var(--accent-red-dim);color:var(--accent-red)}
+.collapse-icon{color:var(--text-muted);font-size:16px;transition:transform .2s}
+.form-section.collapsed .form-section-body{display:none}
+.form-section.collapsed .collapse-icon{transform:rotate(-90deg)}
+.form-section-body{padding:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.form-row.col3{grid-template-columns:1fr 1fr 1fr}
+.form-row.col4{grid-template-columns:1fr 1fr 1fr 1fr}
+.form-row.full{grid-template-columns:1fr}
+.form-row:last-child{margin-bottom:0}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-label{font-size:11px;font-weight:500;color:var(--text-secondary);display:flex;align-items:center;gap:3px}
+.form-label .req{color:var(--accent-red);font-size:10px}
+.form-input,.form-select,.form-textarea{padding:8px 10px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-family:var(--font-sans);outline:none;transition:var(--transition)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent-blue);box-shadow:0 0 0 2px var(--accent-blue-glow)}
+.form-input::placeholder{color:var(--text-muted)}
+.form-select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23555b6e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:26px;cursor:pointer}
+.form-textarea{resize:vertical;min-height:60px}
+.form-hint{font-size:10px;color:var(--text-muted);line-height:1.4}
+.form-input-unit{position:relative}.form-input-unit input{width:100%;padding-right:36px}
+.form-input-unit .unit{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text-muted);font-family:var(--font-mono)}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.toggle-switch{position:relative;width:32px;height:18px;background:var(--border);border-radius:9px;cursor:pointer;transition:var(--transition);flex-shrink:0}
+.toggle-switch.on{background:var(--accent-blue)}
+.toggle-switch::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:var(--transition)}
+.toggle-switch.on::after{left:16px}
+.toggle-label{font-size:12px;color:var(--text-secondary)}
+
+/* Day selector */
+.day-selector{display:flex;gap:4px}
+.day-toggle{width:36px;height:32px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elevated);color:var(--text-muted);font-size:11px;font-weight:600;cursor:pointer;transition:var(--transition);font-family:var(--font-sans)}
+.day-toggle:hover{border-color:var(--text-muted)}
+.day-toggle.selected{background:var(--accent-blue-glow);border-color:var(--accent-blue);color:var(--accent-blue)}
+.day-toggle.weekend.selected{background:var(--accent-red-dim);border-color:var(--accent-red);color:var(--accent-red)}
+
+/* Tag multi-select */
+.tag-input-wrap{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-elevated);padding:6px 8px;display:flex;flex-wrap:wrap;gap:4px;min-height:36px;cursor:text;transition:var(--transition)}
+.tag-input-wrap:focus-within{border-color:var(--accent-blue);box-shadow:0 0 0 2px var(--accent-blue-glow)}
+.tag-input-wrap input{border:none;background:none;outline:none;color:var(--text-primary);font-size:12px;font-family:var(--font-sans);flex:1;min-width:80px}
+.tag-input-wrap input::placeholder{color:var(--text-muted)}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;background:var(--bg-card);border:1px solid var(--border);border-radius:3px;font-size:10px;color:var(--text-secondary)}
+.tag .remove{cursor:pointer;color:var(--text-muted);font-size:12px;line-height:1}.tag .remove:hover{color:var(--accent-red)}
+
+/* Category checklist */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px}
+.cat-check{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);font-size:11px;color:var(--text-secondary)}
+.cat-check:hover{background:var(--bg-hover)}
+.cat-check input[type=checkbox]{accent-color:var(--accent-blue);width:13px;height:13px}
+
+/* Vehicle search */
+.vehicle-search-wrap{margin-top:8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);max-height:180px;overflow-y:auto;padding:4px}
+.vehicle-search-wrap .v-item{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:3px;font-size:11px;color:var(--text-secondary);cursor:pointer;transition:var(--transition)}
+.vehicle-search-wrap .v-item:hover{background:var(--bg-hover)}
+.vehicle-search-wrap .v-item.selected{background:var(--accent-blue-glow);color:var(--accent-blue)}
+.vehicle-search-wrap .v-item input[type=checkbox]{accent-color:var(--accent-blue);width:12px;height:12px}
+
+/* Cap */
+.cap-setting{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px}
+.cap-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}.cap-row:last-child{margin-bottom:0}
+.cap-row label{min-width:70px;font-size:11px;font-weight:500;color:var(--text-secondary)}
+.cap-row input{width:100px;padding:6px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);font-size:12px;font-family:var(--font-mono);outline:none;text-align:right}
+.cap-row input:focus{border-color:var(--accent-blue)}
+.cap-unit{font-size:10px;color:var(--text-muted)}
+
+/* History */
+.history-item{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--radius-md);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.history-icon{width:32px;height:32px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.history-icon.create{background:var(--accent-green-dim);color:var(--accent-green)}
+.history-icon.edit{background:var(--accent-blue-glow);color:var(--accent-blue)}
+.history-icon.cap{background:var(--accent-amber-dim);color:var(--accent-amber)}
+.history-icon.stop{background:var(--accent-red-dim);color:var(--accent-red)}
+.history-content{flex:1}
+.history-title{font-size:12px;font-weight:500;margin-bottom:2px}
+.history-detail{font-size:11px;color:var(--text-muted);line-height:1.5}
+.history-time{font-size:10px;color:var(--text-muted);font-family:var(--font-mono);white-space:nowrap}
+
+/* Conflict */
+.conflict-card{background:var(--bg-card);border:1px solid rgba(239,68,68,.2);border-radius:var(--radius-md);padding:14px;margin-bottom:10px}
+.conflict-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.conflict-type{font-size:11px;font-weight:600;color:var(--accent-red);display:flex;align-items:center;gap:5px}
+.conflict-severity{font-size:9px;padding:2px 5px;border-radius:3px;font-weight:600}
+.conflict-severity.high{background:var(--accent-red-dim);color:var(--accent-red)}.conflict-severity.medium{background:var(--accent-amber-dim);color:var(--accent-amber)}
+.conflict-body{font-size:11px;color:var(--text-secondary);line-height:1.5}
+.conflict-policies{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.conflict-policy-tag{padding:3px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:3px;font-size:10px;font-family:var(--font-mono);color:var(--text-secondary)}
+
+/* FORM FOOTER */
+.form-footer{position:sticky;bottom:0;background:var(--bg-surface);border-top:1px solid var(--border-subtle);padding:14px 24px;display:flex;justify-content:flex-end;gap:8px;margin:-24px -24px 0}
+.btn{padding:8px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-card);color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font-sans);transition:var(--transition);display:inline-flex;align-items:center;gap:5px}
+.btn:hover{border-color:var(--text-muted);color:var(--text-primary)}
+.btn.primary{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}.btn.primary:hover{background:var(--accent-blue-dim)}
+.btn.warn{background:var(--accent-amber-dim);border-color:rgba(245,158,11,.3);color:var(--accent-amber)}
+.btn.danger{background:var(--accent-red-dim);border-color:rgba(239,68,68,.3);color:var(--accent-red)}
+
+/* Tab content */
+.tab-content{display:none}.tab-content.active{display:block}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeIn .3s ease forwards}
+</style>
+</head>
+<body>
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+<div class="sidebar-logo"><div class="logo-icon">S</div><div><div class="logo-text">SOCAR</div><div class="logo-sub">Coupon Admin</div></div></div>
+<nav class="sidebar-nav">
+<div class="nav-section">
+<div class="nav-section-title">Overview</div>
+<div class="nav-item" onclick="showPage('dashboard')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+대시보드
+</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">쿠폰 관리</div>
+<div class="nav-item active" data-page="policies" onclick="showPage('policies')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V8H6a2 2 0 01-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 100 4 2 2 0 000-4z"/></svg>
+정책 관리 <span class="nav-badge">12</span>
+</div>
+<div class="nav-item" data-page="issue" onclick="showPage('issue')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+발행 요청
+</div>
+<div class="nav-item" data-page="usage" onclick="showPage('usage')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+사용 현황
+</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">감지</div>
+<div class="nav-item" data-page="conflicts" onclick="showPage('conflicts')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+충돌·잠식 감지 <span class="nav-badge">3</span>
+</div>
+</div>
+<div class="nav-section">
+<div class="nav-section-title">이력</div>
+<div class="nav-item" onclick="showPage('history')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+변경 이력
+</div>
+</div>
+</nav>
+<div class="sidebar-footer"><div class="user-info"><div class="user-avatar">레</div><div><div class="user-name">레몬</div><div class="user-role">사업기획팀</div></div></div></div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+<header class="topbar">
+<div class="breadcrumb" id="breadcrumb">쿠폰 관리 / <span>정책 관리</span></div>
+<div class="topbar-right">
+<button class="topbar-btn" onclick="showPage('conflicts')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+충돌 <span style="color:var(--accent-red);font-weight:700">3</span>
+</button>
+<button class="topbar-btn primary" onclick="showPage('issue')">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+새 쿠폰 발행
+</button>
+</div>
+</header>
+
+<div class="content">
+
+<!-- ════════ PAGE: 정책 관리 ════════ -->
+<div class="page active" id="page-policies">
+<div class="page-header animate-in">
+<div class="page-title">쿠폰 정책 관리</div>
+<div class="page-desc">최근 4주(2/17~3/19) 기준 · 모쿠폰–자쿠폰 구조 · Cap 기반 비용 통제</div>
+</div>
+<div class="stats-row">
+<div class="stat-card blue"><div class="stat-label">활성 정책</div><div class="stat-value">128</div><div class="stat-sub"><span class="up">+12</span> vs 4주 전</div></div>
+<div class="stat-card green"><div class="stat-label">4주 발행량</div><div class="stat-value">186.4K</div><div class="stat-sub">월 Cap 240K 대비 <span style="color:var(--accent-green)">77.7%</span></div></div>
+<div class="stat-card amber"><div class="stat-label">Cap 임박 정책</div><div class="stat-value">7</div><div class="stat-sub"><span class="down">90%</span> 이상 소진</div></div>
+<div class="stat-card red"><div class="stat-label">자동 중지됨</div><div class="stat-value">3</div><div class="stat-sub">최근 4주 내 Cap 초과 중지</div></div>
+</div>
+
+<div class="alert-bar warn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+<div class="alert-text"><strong>[Cap 임박]</strong> "3월 주중 가동률 부스트" 발행 Cap 92% 소진 — 잔여 800매</div>
+<button class="alert-action">Cap 조정</button>
+</div>
+<div class="alert-bar danger">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+<div class="alert-text"><strong>[충돌 감지]</strong> 3개 정책에서 유사 조건 중복 감지 — 비의도적 중복 할인 가능</div>
+<button class="alert-action" onclick="showPage('conflicts')">상세 보기</button>
+</div>
+
+<div class="tabs">
+<div class="tab active" data-tab="policies-list">전체 정책 <span class="tab-count">142</span></div>
+<div class="tab" data-tab="policies-history">변경 이력 <span class="tab-count">28</span></div>
+<div class="tab" data-tab="policies-conflicts">충돌·잠식 <span class="tab-count">3</span></div>
+</div>
+
+<div class="tab-content active" id="tab-policies-list">
+<div class="filter-bar">
+<div class="filter-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input placeholder="정책명, 쿠폰 ID 검색..."></div>
+<select class="filter-select"><option>상태: 전체</option><option>활성</option><option>일시중지</option><option>종료</option><option>승인대기</option></select>
+<select class="filter-select"><option>유형: 전체</option><option>정률 할인</option><option>정액 할인</option></select>
+<select class="filter-select"><option>요청부서: 전체</option><option>사업기획팀</option><option>마케팅팀</option><option>CRM팀</option></select>
+</div>
+<div class="table-wrap">
+<table>
+<thead><tr><th>정책명</th><th>유형</th><th>상태</th><th>발행 Cap</th><th>적용 요일</th><th>사용기간</th><th>버전</th><th>부서</th></tr></thead>
+<tbody>
+<tr onclick="showPage('issue')"><td><div class="policy-name"><span class="parent-icon">M</span>3월 주중 가동률 부스트</div><div class="policy-id" style="padding-left:23px">P-2026-0312</div></td><td><span class="badge" style="background:var(--accent-blue-glow);color:var(--accent-blue)">정률 30%</span></td><td><span class="badge active">활성</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill warn" style="width:92%"></div></div><span class="cap-text">9,200/10,000</span></div></td><td><div class="day-chips"><span class="day-chip on">월</span><span class="day-chip on">화</span><span class="day-chip on">수</span><span class="day-chip on">목</span><span class="day-chip on">금</span><span class="day-chip weekend">토</span><span class="day-chip weekend">일</span></div></td><td style="font-size:11px;color:var(--text-secondary)">03.01~03.31</td><td><span class="version-tag">v3</span></td><td style="font-size:11px;color:var(--text-secondary)">사업기획</td></tr>
+<tr class="child-row"><td><div class="child-indent"><span class="child-line"></span>3월 1주차 (03.01~07)</div><div class="policy-id" style="padding-left:40px">C-0312-01</div></td><td style="font-size:10px;color:var(--text-muted)">계승</td><td><span class="badge ended">종료</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill safe" style="width:100%"></div></div><span class="cap-text">2,500/2,500</span></div></td><td style="font-size:10px;color:var(--text-muted)">계승</td><td style="font-size:11px;color:var(--text-secondary)">03.01~03.07</td><td><span class="version-tag">v3</span></td><td>—</td></tr>
+<tr class="child-row"><td><div class="child-indent"><span class="child-line"></span>3월 2주차 (03.08~14)</div><div class="policy-id" style="padding-left:40px">C-0312-02</div></td><td style="font-size:10px;color:var(--text-muted)">계승</td><td><span class="badge active">활성</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill warn" style="width:78%"></div></div><span class="cap-text">1,950/2,500</span></div></td><td style="font-size:10px;color:var(--text-muted)">계승</td><td style="font-size:11px;color:var(--text-secondary)">03.08~03.14</td><td><span class="version-tag">v3</span></td><td>—</td></tr>
+<tr><td><div class="policy-name"><span class="parent-icon">M</span>주말 피크 수익 보호</div><div class="policy-id" style="padding-left:23px">P-2026-0298</div></td><td><span class="badge" style="background:var(--accent-green-dim);color:var(--accent-green)">정액 5,000원</span></td><td><span class="badge active">활성</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill safe" style="width:41%"></div></div><span class="cap-text">2,050/5,000</span></div></td><td><div class="day-chips"><span class="day-chip">월</span><span class="day-chip">화</span><span class="day-chip">수</span><span class="day-chip">목</span><span class="day-chip">금</span><span class="day-chip weekend on">토</span><span class="day-chip weekend on">일</span></div></td><td style="font-size:11px;color:var(--text-secondary)">03.01~03.31</td><td><span class="version-tag">v1</span></td><td style="font-size:11px;color:var(--text-secondary)">마케팅</td></tr>
+<tr><td><div class="policy-name"><span class="parent-icon">M</span>신규 유저 첫 이용 프로모션</div><div class="policy-id" style="padding-left:23px">P-2026-0315</div></td><td><span class="badge" style="background:var(--accent-blue-glow);color:var(--accent-blue)">정률 50%</span></td><td><span class="badge cap-warn">Cap 초과 중지</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill danger" style="width:100%"></div></div><span class="cap-text" style="color:var(--accent-red)">15,000/15,000</span></div></td><td><div class="day-chips"><span class="day-chip on">월</span><span class="day-chip on">화</span><span class="day-chip on">수</span><span class="day-chip on">목</span><span class="day-chip on">금</span><span class="day-chip weekend on">토</span><span class="day-chip weekend on">일</span></div></td><td style="font-size:11px;color:var(--text-secondary)">03.01~04.30</td><td><span class="version-tag">v2</span></td><td style="font-size:11px;color:var(--text-secondary)">CRM</td></tr>
+<tr><td><div class="policy-name"><span class="parent-icon">M</span>휴면 유저 복귀 캠페인</div><div class="policy-id" style="padding-left:23px">P-2026-0288</div></td><td><span class="badge" style="background:var(--accent-blue-glow);color:var(--accent-blue)">정률 40%</span></td><td><span class="badge pending">승인대기</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill safe" style="width:0%"></div></div><span class="cap-text">—/8,000</span></div></td><td><div class="day-chips"><span class="day-chip on">월</span><span class="day-chip on">화</span><span class="day-chip on">수</span><span class="day-chip on">목</span><span class="day-chip on">금</span><span class="day-chip weekend">토</span><span class="day-chip weekend">일</span></div></td><td style="font-size:11px;color:var(--text-secondary)">03.15~04.15</td><td><span class="version-tag">v1</span></td><td style="font-size:11px;color:var(--text-secondary)">CRM</td></tr>
+<tr><td><div class="policy-name"><span class="parent-icon">M</span>2월 전국 프로모션</div><div class="policy-id" style="padding-left:23px">P-2026-0201</div></td><td><span class="badge" style="background:var(--accent-green-dim);color:var(--accent-green)">정액 3,000원</span></td><td><span class="badge ended">자동 종료</span></td><td><div class="cap-bar"><div class="cap-progress"><div class="cap-fill safe" style="width:73%"></div></div><span class="cap-text">7,300/10,000</span></div></td><td><div class="day-chips"><span class="day-chip on">월</span><span class="day-chip on">화</span><span class="day-chip on">수</span><span class="day-chip on">목</span><span class="day-chip on">금</span><span class="day-chip weekend on">토</span><span class="day-chip weekend on">일</span></div></td><td style="font-size:11px;color:var(--text-muted)">02.01~02.28</td><td><span class="version-tag">v5</span></td><td style="font-size:11px;color:var(--text-secondary)">사업기획</td></tr>
+</tbody>
+</table>
+<div class="table-footer"><span>총 142개 정책 중 1–6</span><div class="pagination"><button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button><button class="page-btn">…</button><button class="page-btn">24</button></div></div>
+</div>
+</div>
+
+<div class="tab-content" id="tab-policies-history">
+<div class="history-item"><div class="history-icon cap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="history-content"><div class="history-title">"신규 유저 첫 이용" Cap 초과 자동 중지</div><div class="history-detail">발행 Cap 15,000매 도달 → 시스템 자동 중지 · 관리자(레몬) 알림 발송</div></div><div class="history-time">오늘 14:32</div></div>
+<div class="history-item"><div class="history-icon edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="history-content"><div class="history-title">"3월 주중 가동률 부스트" v2→v3</div><div class="history-detail">변경: 레몬(사업기획) · 할인율 25%→30%, 월~목→월~금 · 승인: 김매니저 · 기발급: 기존 조건 유지</div></div><div class="history-time">오늘 11:05</div></div>
+<div class="history-item"><div class="history-icon create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="history-content"><div class="history-title">"휴면 유저 복귀 캠페인" 생성 → 승인대기</div><div class="history-detail">요청: 박CRM(CRM팀) · 설문지 기반 자동 생성</div></div><div class="history-time">어제 16:20</div></div>
+<div class="history-item"><div class="history-icon stop"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6"/></svg></div><div class="history-content"><div class="history-title">"2월 전국 프로모션" 만료 → 자동 종료</div><div class="history-detail">2.28 만료 → 쿠폰 자동 비활성화 + 정책 상태 종료 전환</div></div><div class="history-time">03.01 00:00</div></div>
+</div>
+
+<div class="tab-content" id="tab-policies-conflicts">
+<div class="conflict-card"><div class="conflict-header"><div class="conflict-type"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>조건 중복 — 동일 세그먼트 이중 할인</div><span class="conflict-severity high">심각</span></div><div class="conflict-body">신규 유저 대상 2종이 동일 기간에 적용 → 최대 80% 할인(50%+30%) 중복 가능<div class="conflict-policies"><span class="conflict-policy-tag">P-2026-0315</span><span class="conflict-policy-tag">P-2026-0312</span></div></div></div>
+<div class="conflict-card" style="border-color:rgba(245,158,11,.2)"><div class="conflict-header"><div class="conflict-type" style="color:var(--accent-amber)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>매출 잠식 — 주말 피크 수익성 하락</div><span class="conflict-severity medium">주의</span></div><div class="conflict-body">주말 토 09~18시 할인 적용 중 · 목표 GPM 25% 대비 실제 <strong style="color:var(--accent-red)">19.2%</strong><div class="conflict-policies"><span class="conflict-policy-tag">P-2026-0298</span></div></div></div>
+<div class="conflict-card" style="border-color:rgba(245,158,11,.2)"><div class="conflict-header"><div class="conflict-type" style="color:var(--accent-amber)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>레거시 간섭 — 2024년 쿠폰 여전히 활성</div><span class="conflict-severity medium">주의</span></div><div class="conflict-body">P-2024-0088 (2년 전 발행) 활성 → 3월 정책과 중복 할인 발생<div class="conflict-policies"><span class="conflict-policy-tag">P-2024-0088</span><span class="conflict-policy-tag">P-2026-0312</span></div></div></div>
+</div>
+</div>
+
+<!-- ════════ PAGE: 발행 요청 ════════ -->
+<div class="page" id="page-issue">
+<div class="page-header animate-in">
+<div class="page-title">쿠폰 발행 요청</div>
+<div class="page-desc">쿠폰 정책을 설정하고 승인 요청합니다. 승인 완료 시 자동 생성됩니다.</div>
+</div>
+<div class="form-page">
+
+<!-- 1. 기본 정보 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">① 기본 정보</div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row full"><div class="form-group"><label class="form-label">쿠폰명 <span class="req">*</span></label><input class="form-input" placeholder="예: 3월 주중 가동률 부스트 30%"></div></div>
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">쿠폰 구분 <span class="req">*</span></label><select class="form-select"><option>일반쿠폰</option><option>리필쿠폰</option><option>선물쿠폰</option></select></div>
+<div class="form-group"><label class="form-label">할인 유형 <span class="req">*</span></label><select class="form-select" id="discountType" onchange="toggleDiscountFields()"><option value="rate">정률 할인 (%)</option><option value="amount">정액 할인 (원)</option><option value="time">할인 시간 (분)</option></select></div>
+<div class="form-group" id="discountValueGroup"><label class="form-label">할인 값 <span class="req">*</span></label><div class="form-input-unit"><input class="form-input" type="number" placeholder="30" style="font-family:var(--font-mono)"><span class="unit" id="discountUnit">%</span></div></div>
+</div>
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">할인률(보험료)</label><div class="form-input-unit"><input class="form-input" type="number" placeholder="0"><span class="unit">%</span></div></div>
+<div class="form-group"><label class="form-label">최대 할인 금액</label><div class="form-input-unit"><input class="form-input" type="number" placeholder="50000"><span class="unit">원</span></div></div>
+<div class="form-group"><label class="form-label">최저 사용 금액</label><div class="form-input-unit"><input class="form-input" type="number" placeholder="0"><span class="unit">원</span></div></div>
+</div>
+<div class="form-row full"><div class="form-group"><label class="form-label">설명</label><textarea class="form-textarea" placeholder="쿠폰 목적 및 사용 조건 설명"></textarea></div></div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">요청부서 <span class="req">*</span></label><select class="form-select"><option>사업기획팀</option><option>마케팅팀</option><option>CRM팀</option><option>운영팀</option></select></div>
+<div class="form-group"><label class="form-label">요청자</label><input class="form-input" value="레몬" readonly style="color:var(--text-muted)"></div>
+</div>
+</div>
+</div>
+
+<!-- 2. 발행·Cap -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">② 발행·Cap 설정 <span class="section-badge new">NEW</span></div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="cap-setting">
+<div class="cap-row"><label>발행 수량</label><input type="number" value="1" min="1" max="100"><span class="cap-unit">건 (최대 100)</span></div>
+<div class="cap-row"><label>발행 Cap</label><input type="number" placeholder="10000"><span class="cap-unit">매</span><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text-muted)">초과 시 자동 중지</span></div>
+<div class="cap-row"><label>사용 Cap</label><input type="number" placeholder="8000"><span class="cap-unit">매</span><div class="toggle-switch on" onclick="this.classList.toggle('on')"></div><span style="font-size:10px;color:var(--text-muted)">초과 시 자동 중지</span></div>
+<div class="cap-row"><label>알림 임계</label><input type="number" value="90"><span class="cap-unit">% 도달 시 관리자 알림</span></div>
+<div class="cap-row"><label>1인당 제한</label><input type="number" placeholder="1"><span class="cap-unit">매</span></div>
+</div>
+<div class="form-hint" style="margin-top:6px">Cap 도달 시 해당 정책의 쿠폰 발행이 자동 중지되며 관리자에게 알림 전송됩니다.</div>
+<div style="margin-top:10px">
+<div class="toggle-row"><div class="toggle-switch" onclick="this.classList.toggle('on')"></div><span class="toggle-label">개인당 동시 사용가능 등록 제한</span></div>
+</div>
+</div>
+</div>
+
+<!-- 3. 기간·요일·시간 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">③ 기간·요일·시간 조건 <span class="section-badge">개선</span></div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">사용 시작일 <span class="req">*</span></label><input class="form-input" type="date" value="2026-03-01"></div>
+<div class="form-group"><label class="form-label">사용 종료일 <span class="req">*</span></label><input class="form-input" type="date" value="2026-03-31"></div>
+<div class="form-group"><label class="form-label">유효기간</label><div class="form-input-unit"><input class="form-input" type="number" placeholder="30"><span class="unit">일</span></div></div>
+</div>
+<div class="form-row full"><div class="form-group">
+<label class="form-label">적용 요일 <span class="req">*</span></label>
+<div class="day-selector">
+<button class="day-toggle selected" onclick="this.classList.toggle('selected')">월</button>
+<button class="day-toggle selected" onclick="this.classList.toggle('selected')">화</button>
+<button class="day-toggle selected" onclick="this.classList.toggle('selected')">수</button>
+<button class="day-toggle selected" onclick="this.classList.toggle('selected')">목</button>
+<button class="day-toggle selected" onclick="this.classList.toggle('selected')">금</button>
+<button class="day-toggle weekend" onclick="this.classList.toggle('selected')">토</button>
+<button class="day-toggle weekend" onclick="this.classList.toggle('selected')">일</button>
+</div>
+<div class="form-hint">AS-IS "주중 전용/제한 없음" → TO-BE 요일별 개별 선택</div>
+</div></div>
+<div class="form-row col4">
+<div class="form-group"><label class="form-label">대여 시작 (이후)</label><select class="form-select"><option>제한 없음</option><option>06:00</option><option>07:00</option><option>08:00</option><option>09:00</option><option>10:00</option><option>12:00</option><option>14:00</option><option>18:00</option></select></div>
+<div class="form-group"><label class="form-label">대여 시작 (이전)</label><select class="form-select"><option>제한 없음</option><option>12:00</option><option>18:00</option><option>21:00</option><option>22:00</option><option>23:00</option></select></div>
+<div class="form-group"><label class="form-label">반납 시작 (이후)</label><select class="form-select"><option>제한 없음</option><option>06:00</option><option>09:00</option><option>12:00</option><option>18:00</option></select></div>
+<div class="form-group"><label class="form-label">반납 시작 (이전)</label><select class="form-select"><option>제한 없음</option><option>12:00</option><option>18:00</option><option>21:00</option><option>23:59</option></select></div>
+</div>
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">대여~반납 최소</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">분</span></div></div>
+<div class="form-group"><label class="form-label">대여~반납 최대</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">분</span></div></div>
+<div class="form-group"><label class="form-label">대여 n분 전부터 사용</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">분</span></div></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">지정일시 이후 대여 가능</label><input class="form-input" type="datetime-local"></div>
+<div class="form-group"><label class="form-label">지정일시 이전 반납 가능</label><input class="form-input" type="datetime-local"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">유효기간 내 차량반납</label><select class="form-select"><option>확인</option><option>미확인</option></select></div>
+<div class="form-group"><label class="form-label">사용불가 일자</label><input class="form-input" placeholder="YYYY-MM-DD (쉼표 구분)"></div>
+</div>
+</div>
+</div>
+
+<!-- 4. 차종·차량 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">④ 차종·차량 설정 <span class="section-badge">개선</span></div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-group" style="margin-bottom:10px">
+<label class="form-label">적용 차종 모델 (카테고리)</label>
+<div class="form-hint" style="margin-bottom:6px">전체 해제 시 모든 차량모델에 적용</div>
+<div class="cat-grid">
+<label class="cat-check"><input type="checkbox" checked> 경형</label>
+<label class="cat-check"><input type="checkbox" checked> 경형SUV</label>
+<label class="cat-check"><input type="checkbox" checked> 소형</label>
+<label class="cat-check"><input type="checkbox" checked> 준중형</label>
+<label class="cat-check"><input type="checkbox" checked> 중형</label>
+<label class="cat-check"><input type="checkbox"> 준대형</label>
+<label class="cat-check"><input type="checkbox"> 대형</label>
+<label class="cat-check"><input type="checkbox"> 소형SUV</label>
+<label class="cat-check"><input type="checkbox"> 엔트리SUV</label>
+<label class="cat-check"><input type="checkbox"> 준중형SUV</label>
+<label class="cat-check"><input type="checkbox"> 중형SUV</label>
+<label class="cat-check"><input type="checkbox"> 준대형SUV</label>
+<label class="cat-check"><input type="checkbox"> 대형SUV</label>
+<label class="cat-check"><input type="checkbox"> RV</label>
+<label class="cat-check"><input type="checkbox"> 승합</label>
+<label class="cat-check"><input type="checkbox"> EV</label>
+<label class="cat-check"><input type="checkbox"> 수입</label>
+<label class="cat-check"><input type="checkbox"> 초소형EV</label>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label">적용 차종 (검색)</label>
+<div class="tag-input-wrap">
+<span class="tag">더 뉴 기아 레이 <span class="remove" onclick="this.parentElement.remove()">×</span></span>
+<span class="tag">더 뉴 아반떼 <span class="remove" onclick="this.parentElement.remove()">×</span></span>
+<input placeholder="차종명 검색..." id="vehicleSearch" oninput="filterVehicles(this.value)">
+</div>
+<div class="vehicle-search-wrap" id="vehicleList" style="display:none"></div>
+</div>
+<div class="form-group">
+<label class="form-label">제외 차종</label>
+<div class="tag-input-wrap"><input placeholder="제외할 차종명 검색..."></div>
+</div>
+</div>
+<div class="form-row full"><div class="form-group">
+<label class="form-label">사용 가능 차량 (차량 ID)</label>
+<div class="tag-input-wrap"><input placeholder="차량 ID 입력 후 Enter..."></div>
+<div class="form-hint">특정 차량을 지정합니다. 비워두면 차종 기준으로 적용됩니다.</div>
+</div></div>
+</div>
+</div>
+
+<!-- 5. 존·지역 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">⑤ 존·지역 설정 <span class="section-badge">개선</span></div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row">
+<div class="form-group"><label class="form-label">시/도</label><select class="form-select"><option>전체</option><option>서울</option><option>경기</option><option>인천</option><option>부산</option><option>대구</option><option>광주</option><option>대전</option><option>울산</option><option>세종</option><option>강원</option><option>충북</option><option>충남</option><option>전북</option><option>전남</option><option>경북</option><option>경남</option><option>제주</option></select></div>
+<div class="form-group"><label class="form-label">시/군/구</label><select class="form-select"><option>시/도 선택 필요</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label">사용 가능 쏘카존</label>
+<div class="tag-input-wrap">
+<span class="tag">Z-1001 강남역 1번 <span class="remove" onclick="this.parentElement.remove()">×</span></span>
+<span class="tag">Z-1042 서초역 2번 <span class="remove" onclick="this.parentElement.remove()">×</span></span>
+<input placeholder="존 ID 또는 이름 검색...">
+</div>
+<div class="form-hint">AS-IS: 숫자와 콤마 수기 입력 → TO-BE: 존 ID–이름 매핑 검색</div>
+</div>
+<div class="form-group">
+<label class="form-label">사용 불가 쏘카존</label>
+<div class="tag-input-wrap"><input placeholder="제외할 존 검색..."></div>
+</div>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label class="form-label">사용 가능 허브존 (편도)</label>
+<div class="tag-input-wrap"><input placeholder="허브존 검색..."></div>
+</div>
+<div class="form-group">
+<label class="form-label">포함 존 특성</label>
+<div class="tag-input-wrap"><input placeholder="존 특성 ID 입력..."></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 6. 운행 타입 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">⑥ 운행 타입 <span class="section-badge removed">정비</span></div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-hint" style="margin-bottom:8px">사용 빈도 낮은 운행 타입 제거 · 핵심 타입만 유지</div>
+<div class="cat-grid">
+<label class="cat-check"><input type="checkbox" checked> 왕복</label>
+<label class="cat-check"><input type="checkbox"> 쏘카존 편도</label>
+<label class="cat-check"><input type="checkbox"> 편도</label>
+<label class="cat-check"><input type="checkbox"> 부름(배차)</label>
+<label class="cat-check"><input type="checkbox"> 부름왕복</label>
+<label class="cat-check"><input type="checkbox"> 부름편도</label>
+<label class="cat-check"><input type="checkbox"> 공항 편도</label>
+</div>
+<div class="form-row" style="margin-top:10px">
+<div class="form-group"><label class="form-label">제외 셰어링 타입</label><div class="tag-input-wrap"><input placeholder="제외할 타입 입력..."></div></div>
+<div class="form-group"><label class="form-label">부름/편도 할인</label>
+<div class="form-row"><div class="form-input-unit"><input class="form-input" type="number" placeholder="부름 %"><span class="unit">%</span></div><div class="form-input-unit"><input class="form-input" type="number" placeholder="편도 %"><span class="unit">%</span></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 7. 대상·타겟팅 -->
+<div class="form-section">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">⑦ 대상·타겟팅</div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">쿠폰 적용 대상</label><select class="form-select"><option>전체</option><option>특정 세그먼트</option></select></div>
+<div class="form-group"><label class="form-label">유료/무료</label><select class="form-select"><option>무료</option><option>유료</option></select></div>
+<div class="form-group"><label class="form-label">선물 가능</label><select class="form-select"><option>불가</option><option>가능</option></select></div>
+</div>
+<div class="form-row col4">
+<div class="form-group"><label class="form-label">법인 전용</label><select class="form-select"><option>제한 없음</option><option>법인전용</option><option>개인+법인카드</option></select></div>
+<div class="form-group"><label class="form-label">나이(만) 이상</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">세</span></div></div>
+<div class="form-group"><label class="form-label">나이(만) 이하</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">세</span></div></div>
+<div class="form-group"><label class="form-label">클럽 레벨 이상</label><select class="form-select"><option>제한 없음</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">타겟팅</label><select class="form-select"><option>제한없음</option><option>특정 타겟 지정</option></select></div>
+<div class="form-group"><label class="form-label">모바일 이용권 가격</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">원</span></div></div>
+</div>
+</div>
+</div>
+
+<!-- 8. 가격제·추가 설정 -->
+<div class="form-section collapsed">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">⑧ 가격제·추가 설정</div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row">
+<div class="form-group"><label class="form-label">포함 가격제</label><div class="tag-input-wrap"><input placeholder="가격제 ID 입력..."></div></div>
+<div class="form-group"><label class="form-label">제외 가격제</label><div class="tag-input-wrap"><input placeholder="제외 가격제 ID 입력..."></div></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">추가발급 쿠폰</label><div class="tag-input-wrap"><input placeholder="추가 발급할 쿠폰 ID..."></div></div>
+<div class="form-group"><label class="form-label">쿠폰 등록시 추가 발급 쿠폰</label><div class="tag-input-wrap"><input placeholder="쿠폰 ID 입력..."></div></div>
+</div>
+<div class="form-row col3">
+<div class="form-group"><label class="form-label">생성이후 등록제한</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">일</span></div></div>
+<div class="form-group"><label class="form-label">대여 n일 이후 사용</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">일</span></div></div>
+<div class="form-group"><label class="form-label">n분 이후 할인 적용</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">분</span></div></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label class="form-label">쿠폰목록 숨김</label><select class="form-select"><option value="0">노출 (기본)</option><option value="1">숨김</option></select></div>
+<div class="form-group"><label class="form-label">편도 최대 할인 금액</label><div class="form-input-unit"><input class="form-input" type="number" placeholder=""><span class="unit">원</span></div></div>
+</div>
+</div>
+</div>
+
+<!-- 9. 알림·연동 -->
+<div class="form-section collapsed">
+<div class="form-section-header" onclick="toggleSection(this)"><div class="form-section-title">⑨ 알림·연동</div><span class="collapse-icon">▾</span></div>
+<div class="form-section-body">
+<div class="form-row">
+<div class="form-group"><label class="form-label">반납 완료시 푸시</label><input class="form-input" placeholder="푸시 메시지 내용"></div>
+<div class="form-group"><label class="form-label">카카오 알림톡 템플릿 코드</label><input class="form-input" placeholder="템플릿 코드 입력"></div>
+</div>
+<div class="form-row full"><div class="form-group"><label class="form-label">쿠폰 버튼 딥링크</label><input class="form-input" placeholder="딥링크 URL 입력"></div></div>
+<div class="form-row full"><div class="form-group"><label class="form-label">추가 정책</label><div class="tag-input-wrap"><input placeholder="추가 정책 등록..."></div></div></div>
+</div>
+</div>
+
+<!-- FORM FOOTER -->
+<div class="form-footer">
+<button class="btn" onclick="showPage('policies')">취소</button>
+<button class="btn warn">임시저장</button>
+<button class="btn primary" onclick="alert('승인 요청이 전송되었습니다.\n승인 완료 시 RPA가 자동으로 정책을 생성합니다.')">승인 요청</button>
+</div>
+</div>
+</div>
+
+<!-- ════════ PAGE: Conflicts (alias) ════════ -->
+<div class="page" id="page-conflicts">
+<div class="page-header"><div class="page-title">충돌·잠식 감지</div><div class="page-desc">유사 조건 자동 탐지 — 비의도적 중복 할인 및 매출 잠식 방지</div></div>
+<div class="conflict-card"><div class="conflict-header"><div class="conflict-type"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>조건 중복 — 동일 세그먼트 이중 할인</div><span class="conflict-severity high">심각</span></div><div class="conflict-body">신규 유저 대상 2종이 동일 기간에 적용 → 최대 80% 중복 할인<br><strong>권장:</strong> 세그먼트 조건을 상호 배타적으로 수정<div class="conflict-policies"><span class="conflict-policy-tag">P-2026-0315 신규 유저 첫 이용</span><span class="conflict-policy-tag">P-2026-0312 3월 주중 부스트</span></div></div></div>
+<div class="conflict-card" style="border-color:rgba(245,158,11,.2)"><div class="conflict-header"><div class="conflict-type" style="color:var(--accent-amber)">매출 잠식 — 주말 피크 수익성 하락</div><span class="conflict-severity medium">주의</span></div><div class="conflict-body">토 09~18시 정액 5,000원 → GPM 25% 목표 대비 실제 <strong style="color:var(--accent-red)">19.2%</strong><br><strong>권장:</strong> 피크 시간대 제외 또는 할인 축소<div class="conflict-policies"><span class="conflict-policy-tag">P-2026-0298</span></div></div></div>
+<div class="conflict-card" style="border-color:rgba(245,158,11,.2)"><div class="conflict-header"><div class="conflict-type" style="color:var(--accent-amber)">레거시 간섭 — 2024년 쿠폰 활성</div><span class="conflict-severity medium">주의</span></div><div class="conflict-body">P-2024-0088 (2년 전) 여전히 활성 → 현재 정책과 중복<br><strong>권장:</strong> 레거시 쿠폰 비활성화/회수<div class="conflict-policies"><span class="conflict-policy-tag">P-2024-0088</span><span class="conflict-policy-tag">P-2026-0312</span></div></div></div>
+<div style="margin-top:16px"><button class="btn danger">레거시 일괄 비활성화</button></div>
+</div>
+
+<!-- ════════ PAGE: History ════════ -->
+<div class="page" id="page-history">
+<div class="page-header"><div class="page-title">변경 이력</div><div class="page-desc">정책 생성·수정·중지 전체 이력 — 최근 4주</div></div>
+<div class="history-item"><div class="history-icon cap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div><div class="history-content"><div class="history-title">"신규 유저 첫 이용" Cap 초과 자동 중지</div><div class="history-detail">15,000매 도달 → 자동 중지 · 레몬 알림</div></div><div class="history-time">03.19 14:32</div></div>
+<div class="history-item"><div class="history-icon edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="history-content"><div class="history-title">"3월 주중 부스트" v2→v3</div><div class="history-detail">레몬 · 할인율 25%→30% · 승인: 김매니저</div></div><div class="history-time">03.19 11:05</div></div>
+<div class="history-item"><div class="history-icon create"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div><div class="history-content"><div class="history-title">"휴면 유저 복귀" 생성 → 승인대기</div><div class="history-detail">박CRM(CRM팀) 요청</div></div><div class="history-time">03.18 16:20</div></div>
+<div class="history-item"><div class="history-icon stop"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6"/></svg></div><div class="history-content"><div class="history-title">"2월 전국 프로모션" 자동 종료</div><div class="history-detail">만료 → 쿠폰 비활성화 + 정책 종료</div></div><div class="history-time">03.01 00:00</div></div>
+<div class="history-item"><div class="history-icon edit"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/></svg></div><div class="history-content"><div class="history-title">"3월 주중 부스트" v1→v2</div><div class="history-detail">레몬 · Cap 8K→10K, 존 추가 · 기발급 회수</div></div><div class="history-time">02.28 09:30</div></div>
+</div>
+
+<!-- ════════ PAGE: Usage (stub) ════════ -->
+<div class="page" id="page-usage">
+<div class="page-header"><div class="page-title">사용 현황</div><div class="page-desc">최근 4주 쿠폰 사용 데이터 (2/17~3/19)</div></div>
+<div class="stats-row">
+<div class="stat-card blue"><div class="stat-label">총 사용량</div><div class="stat-value">142.8K</div><div class="stat-sub"><span class="up">+8.3%</span> vs 이전 4주</div></div>
+<div class="stat-card green"><div class="stat-label">사용률</div><div class="stat-value">76.6%</div><div class="stat-sub">발행 186.4K 대비</div></div>
+<div class="stat-card amber"><div class="stat-label">평균 할인율</div><div class="stat-value">32.4%</div><div class="stat-sub"><span class="down">+2.1%p</span> vs 이전 4주</div></div>
+<div class="stat-card red"><div class="stat-label">GPM 미달 정책</div><div class="stat-value">18</div><div class="stat-sub">목표 25% 미달 · 전체의 <span class="down">14%</span></div></div>
+</div>
+</div>
+
+<!-- ════════ PAGE: Dashboard ════════ -->
+<div class="page" id="page-dashboard">
+<div class="page-header"><div class="page-title">대시보드</div><div class="page-desc">최근 4주 종합 현황 (2/17~3/19)</div></div>
+<div class="stats-row">
+<div class="stat-card blue"><div class="stat-label">활성 정책</div><div class="stat-value">128</div><div class="stat-sub"><span class="up">+12</span> vs 4주 전</div></div>
+<div class="stat-card green"><div class="stat-label">4주 발행량</div><div class="stat-value">186.4K</div><div class="stat-sub">Cap 대비 77.7%</div></div>
+<div class="stat-card amber"><div class="stat-label">4주 사용량</div><div class="stat-value">142.8K</div><div class="stat-sub">사용률 76.6%</div></div>
+<div class="stat-card red"><div class="stat-label">GPM 미달</div><div class="stat-value">18</div><div class="stat-sub">전체의 14% · 목표 25%</div></div>
+</div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// Page navigation
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) { page.classList.add('active'); page.querySelectorAll('.animate-in').forEach(el => { el.style.animation = 'none'; el.offsetHeight; el.style.animation = ''; }); }
+  const nav = document.querySelector('[data-page="' + id + '"]');
+  if (nav) nav.classList.add('active');
+  const names = { policies:'정책 관리', issue:'발행 요청', usage:'사용 현황', conflicts:'충돌·잠식 감지', history:'변경 이력', dashboard:'대시보드' };
+  document.getElementById('breadcrumb').innerHTML = '쿠폰 관리 / <span>' + (names[id]||id) + '</span>';
+}
+
+// Tab switching (within policies page)
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const parent = tab.closest('.page');
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    parent.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('tab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+  });
+});
+
+// Section collapse
+function toggleSection(header) {
+  header.closest('.form-section').classList.toggle('collapsed');
+}
+
+// Discount type toggle
+function toggleDiscountFields() {
+  const type = document.getElementById('discountType').value;
+  const unit = document.getElementById('discountUnit');
+  if (type === 'rate') unit.textContent = '%';
+  else if (type === 'amount') unit.textContent = '원';
+  else unit.textContent = '분';
+}
+
+// Vehicle data (simplified categories from the 776 items)
+const vehicles = [
+  '더 뉴 기아 레이','더 뉴 모닝','캐스퍼','더 뉴 캐스퍼','모닝 어반','레이 EV',
+  '더 뉴 아반떼','더 뉴 K3','올 뉴 아반떼','셀토스','디 올 뉴 셀토스','베뉴',
+  '쏘나타 디 엣지','더 뉴 K5','K8','더 뉴 K8 하이브리드',
+  '디 올 뉴 그랜저','디 올 뉴 그랜저 하이브리드','더 뉴 그랜저','G80','G90',
+  '디 올 뉴 코나','더 뉴 셀토스','더 뉴 스포티지','디 올 뉴 투싼',
+  '디 올 뉴 싼타페','더 뉴 쏘렌토','디 올 뉴 팰리세이드','GV70','GV80',
+  '더 뉴 카니발','카니발 9인승','스타리아',
+  '아이오닉 5 롱레인지','아이오닉 6 롱레인지','EV3 롱레인지','EV4 롱레인지','EV6 롱레인지','EV9 롱레인지','아이오닉 9',
+  'BMW X1','BMW 5시리즈','벤츠 E-클래스','미니 컨버터블','볼보 XC40','볼보 XC60',
+  '토레스','XM3','QM6','이쿼녹스','트레일블레이저','니로 EV'
+];
+
+function filterVehicles(query) {
+  const list = document.getElementById('vehicleList');
+  if (!query) { list.style.display = 'none'; return; }
+  const filtered = vehicles.filter(v => v.toLowerCase().includes(query.toLowerCase()));
+  list.innerHTML = filtered.map(v => '<div class="v-item" onclick="selectVehicle(this,\'' + v + '\')"><input type="checkbox"> ' + v + '</div>').join('');
+  list.style.display = filtered.length ? 'block' : 'none';
+}
+
+function selectVehicle(el, name) {
+  const wrap = document.querySelector('#vehicleSearch').closest('.tag-input-wrap');
+  const tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.innerHTML = name + ' <span class="remove" onclick="this.parentElement.remove()">×</span>';
+  wrap.insertBefore(tag, document.getElementById('vehicleSearch'));
+  el.querySelector('input').checked = true;
+  el.classList.add('selected');
+}
+
+// Keyboard
+document.addEventListener('keydown', e => { if (e.key === 'Escape') showPage('policies'); });
+</script>
+</body>
+</html>
