@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>할인/쿠폰/가격 정책 현황</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa;
+    padding: 32px;
+    color: #1a202c;
+    line-height: 1.5;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  h1 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #1a202c;
+  }
+  .subtitle {
+    color: #718096;
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  .section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    padding-left: 12px;
+    border-left: 4px solid #3182ce;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-blue { background: #ebf8ff; color: #2c5282; }
+  .badge-green { background: #f0fff4; color: #276749; }
+  .badge-orange { background: #fffaf0; color: #c05621; }
+  .badge-purple { background: #faf5ff; color: #6b46c1; }
+  .badge-gray { background: #edf2f7; color: #4a5568; }
+  .badge-red { background: #fff5f5; color: #c53030; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 8px;
+  }
+  th {
+    background: #2d3748;
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    border: 1px solid #2d3748;
+  }
+  td {
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    vertical-align: middle;
+  }
+  tr:nth-child(even) td { background: #f7fafc; }
+  .highlight-row td { background: #fffbeb !important; font-weight: 600; }
+  .number { text-align: right; font-variant-numeric: tabular-nums; }
+  .center { text-align: center; }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .card {
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 16px;
+    border-left: 3px solid #3182ce;
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #2d3748;
+  }
+  .card-content {
+    font-size: 12px;
+    color: #4a5568;
+    line-height: 1.6;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #edf2f7;
+    border-radius: 4px;
+    font-size: 11px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+  }
+  .summary-box {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-box h2 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .summary-box ul {
+    list-style: none;
+    font-size: 13px;
+  }
+  .summary-box li {
+    padding: 4px 0;
+    padding-left: 18px;
+    position: relative;
+  }
+  .summary-box li:before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+  }
+  .discount-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bar-track {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    border-radius: 4px;
+  }
+  .bar-fill.high { background: linear-gradient(90deg, #ed8936, #dd6b20); }
+  .bar-fill.very-high { background: linear-gradient(90deg, #f56565, #e53e3e); }
+  .footer-note {
+    font-size: 11px;
+    color: #a0aec0;
+    text-align: right;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>🚗 할인/쿠폰/가격 정책 현황 정리</h1>
+  <p class="subtitle">평균 할인율 30% 목표 · 시즌별 변동 전략 · 타겟별 쿠폰 운영 현황</p>
+
+  <!-- 요약 박스 -->
+  <div class="summary-box">
+    <h2>📌 핵심 요약</h2>
+    <ul>
+      <li><strong>목표 평균 할인율: 30%</strong> (시즌별 30%~75% 탄력 운영)</li>
+      <li><strong>성수기(6~7월):</strong> 할인율 75% 수준 검토 (수요 최대화)</li>
+      <li><strong>비수기(4~5월):</strong> 기본 30% 할인 유지</li>
+      <li><strong>운영 주체:</strong> 쿠폰(레몬) / 가격(키노)</li>
+      <li><strong>타겟:</strong> 첫사용 / 헤비유저 / 인액티브이탈 / 주중주말</li>
+    </ul>
+  </div>
+
+  <!-- 1. 할인율 운영 전략 -->
+  <div class="section">
+    <div class="section-title">
+      ① 할인율 운영 전략 <span class="badge badge-blue">시즌별 탄력 운영</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:15%">구분</th>
+          <th style="width:15%">시기</th>
+          <th style="width:20%">할인율 범위</th>
+          <th style="width:15%">평균 목표</th>
+          <th>적용 전략</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-green">비수기</span></td>
+          <td>4월 ~ 5월</td>
+          <td>
+            <div class="discount-bar">
+              <div class="bar-track"><div class="bar-fill" style="width:30%"></div></div>
+              <span>30%</span>
+            </div>
+          </td>
+          <td class="center"><strong>30%</strong></td>
+          <td>기본 가격제 유지, 표준 쿠폰 운영</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><span class="badge badge-red">성수기</span></td>
+          <td>6월 ~ 7월</td>
+          <td>
+            <div class="discount-bar">
+              <div class="bar-track"><div class="bar-fill very-high" style="width:75%"></div></div>
+              <span>30~75%</span>
+            </div>
+          </td>
+          <td class="center"><strong>~75%</strong></td>
+          <td>고할인 프로모션, 수요 최대화 검토</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-orange">첫사용</span></td>
+          <td>상시</td>
+          <td>
+            <div class="discount-bar">
+              <div class="bar-track"><div class="bar-fill high" style="width:50%"></div></div>
+              <span>50%</span>
+            </div>
+          </td>
+          <td class="center"><strong>50%</strong></td>
+          <td>신규 유입 유도, 첫 경험 강화</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-purple">타겟 쿠폰</span></td>
+          <td>상시/시즌</td>
+          <td>
+            <div class="discount-bar">
+              <div class="bar-track"><div class="bar-fill very-high" style="width:75%"></div></div>
+              <span>30~75%</span>
+            </div>
+          </td>
+          <td class="center"><strong>변동</strong></td>
+          <td>MKT/유저타겟별 차등 적용</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer-note">※ 전체 평균 할인율 30% 수준 유지 목표</div>
+  </div>
+
+  <!-- 2. 가격/쿠폰 운영 체계 -->
+  <div class="section">
+    <div class="section-title">
+      ② 가격/쿠폰 운영 체계 <span class="badge badge-gray">As-Is → To-Be</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:5%">No.</th>
+          <th style="width:20%">구분</th>
+          <th style="width:15%">담당자</th>
+          <th style="width:25%">운영 방식</th>
+          <th>주요 내용 / 타겟</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="center"><strong>①</strong></td>
+          <td>매달 기본 가격제 (월단위)</td>
+          <td><span class="badge badge-blue">키노 (가격)</span></td>
+          <td>사업기획팀 관리</td>
+          <td>월단위 기본 가격 조정, 시즌성 반영</td>
+        </tr>
+        <tr>
+          <td class="center"><strong>②</strong></td>
+          <td>MKT/유저타겟 쿠폰</td>
+          <td><span class="badge badge-orange">레몬 (쿠폰)</span></td>
+          <td>시즌성 / 고할인 운영</td>
+          <td>
+            <span class="tag">프로모션</span>
+            <span class="tag">첫사용</span>
+            <span class="tag">헤비유저</span>
+            <span class="tag">인액티브이탈</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="center"><strong>③</strong></td>
+          <td>계약 기반 상품</td>
+          <td><span class="badge badge-purple">계약팀</span></td>
+          <td>파트너십/제휴</td>
+          <td>패스포트, B2B, 채널링, 제휴 등</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 3. 타겟별 쿠폰 세그먼트 -->
+  <div class="section">
+    <div class="section-title">
+      ③ 타겟별 쿠폰 세그먼트 <span class="badge badge-orange">MKT/유저타겟</span>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">🆕 첫사용 (Acquisition)</div>
+        <div class="card-content">
+          • 할인율: <strong>50%</strong><br>
+          • 목적: 신규 회원 유입 및 첫 경험<br>
+          • 운영: 상시
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔥 헤비유저 (Retention)</div>
+        <div class="card-content">
+          • 할인율: <strong>30~75%</strong><br>
+          • 목적: 고이용 고객 리텐션 강화<br>
+          • 조건: 주중/주말 / 4시간 미만 ~ 4일 이상
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ 인액티브이탈 (Winback)</div>
+        <div class="card-content">
+          • 할인율: <strong>30~75%</strong><br>
+          • 목적: 이탈 직전/이탈 고객 재유입<br>
+          • 조건: 주중/주말 타겟팅
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 시즌성/고할인</div>
+        <div class="card-content">
+          • 할인율: <strong>최대 75%</strong><br>
+          • 목적: 성수기 수요 최대화<br>
+          • 운영: 6~7월 집중
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. 계약 기반 상품 -->
+  <div class="section">
+    <div class="section-title">
+      ④ 계약 기반 상품 현황 <span class="badge badge-purple">계약</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:8%">No.</th>
+          <th style="width:22%">종류</th>
+          <th style="width:20%">구분</th>
+          <th>특이사항</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="center">⑴</td>
+          <td>패스포트 (쏘카)</td>
+          <td><span class="badge badge-blue">자사</span></td>
+          <td>주력 구독 상품, 회원수/소지건수 관리 (아래 표 참조)</td>
+        </tr>
+        <tr>
+          <td class="center">⑵</td>
+          <td>패스포트 (타다)</td>
+          <td><span class="badge badge-blue">자사</span></td>
+          <td>타다 연계 구독 상품</td>
+        </tr>
+        <tr>
+          <td class="center">⑶</td>
+          <td>B2B</td>
+          <td><span class="badge badge-gray">기업 고객</span></td>
+          <td>특이사항 없음</td>
+        </tr>
+        <tr>
+          <td class="center">⑷</td>
+          <td>채널링 (NOL / 네플멤)</td>
+          <td><span class="badge badge-orange">제휴</span></td>
+          <td>채널링 연장 검토 중, 기본 가격제 +5%p 수준</td>
+        </tr>
+        <tr>
+          <td class="center">⑸</td>
+          <td>제휴 (지역/국방부)</td>
+          <td><span class="badge badge-orange">제휴</span></td>
+          <td>특이사항 없음</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5. 패스포트 실적 -->
+  <div class="section">
+    <div class="section-title">
+      ⑤ 패스포트 실적 현황 <span class="badge badge-green">회원수/소지건수</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:10%">구분</th>
+          <th style="width:10%">항목</th>
+          <th style="width:10%" class="number">총계</th>
+          <th class="number">2026-04</th>
+          <th class="number">2026-05</th>
+          <th class="number">2026-06</th>
+          <th class="number">2026-07</th>
+          <th class="number">2026-08</th>
+          <th class="number">2026-09</th>
+          <th class="number">2026-10</th>
+          <th class="number">2026-11</th>
+          <th class="number">2026-12</th>
+          <th class="number">2027</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td rowspan="2"><strong>쏘카</strong><br>패스포트</td>
+          <td>회원수</td>
+          <td class="number"><strong>293,622</strong></td>
+          <td class="number">46,348</td>
+          <td class="number">108,879</td>
+          <td class="number">83,112</td>
+          <td class="number">52,372</td>
+          <td class="number">2,339</td>
+          <td class="number">157</td>
+          <td class="number">189</td>
+          <td class="number">78</td>
+          <td class="number">68</td>
+          <td class="number">80</td>
+        </tr>
+        <tr>
+          <td>소지건수</td>
+          <td class="number"><strong>2,004,444</strong></td>
+          <td class="number">314,016</td>
+          <td class="number">735,148</td>
+          <td class="number">555,251</td>
+          <td class="number">364,553</td>
+          <td class="number">26,378</td>
+          <td class="number">2,143</td>
+          <td class="number">2,685</td>
+          <td class="number">1,160</td>
+          <td class="number">981</td>
+          <td class="number">2,129</td>
+        </tr>
+        <tr>
+          <td rowspan="2"><strong>타다</strong><br>패스포트</td>
+          <td>회원수</td>
+          <td class="number"><strong>456</strong></td>
+          <td class="number">26</td>
+          <td class="number">118</td>
+          <td class="number">154</td>
+          <td class="number">123</td>
+          <td class="number">35</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+        </tr>
+        <tr>
+          <td>소지건수</td>
+          <td class="number"><strong>1,853</strong></td>
+          <td class="number">97</td>
+          <td class="number">481</td>
+          <td class="number">624</td>
+          <td class="number">506</td>
+          <td class="number">145</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+          <td class="number">0</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer-note">
+      ※ 쏘카 패스포트: 5월 피크(회원 10.8만명/소지 73.5만건), 성수기(5~7월) 집중 / 타다 패스포트: 6월 피크, 규모 소폭
+    </div>
+  </div>
+
+  <!-- 6. 인사이트 요약 -->
+  <div class="section">
+    <div class="section-title">
+      💡 인사이트 및 실행 포인트
+    </div>
+    <div class="grid-3">
+      <div class="card" style="border-left-color:#48bb78">
+        <div class="card-title">📊 할인율 전략</div>
+        <div class="card-content">
+          비수기 30% / 성수기 75% 차등 운영으로 <strong>연평균 30%</strong> 목표 달성. 6~7월 고할인 구간에서 GP 영향도 사전 시뮬레이션 필요.
+        </div>
+      </div>
+      <div class="card" style="border-left-color:#ed8936">
+        <div class="card-title">🎯 타겟 최적화</div>
+        <div class="card-content">
+          첫사용(50%) / 헤비유저(변동) / 인액티브(변동)으로 3대 축 운영. <strong>주중/주말 × 이용시간(4시간~4일+) 매트릭스</strong> 기반 쿠폰 설계.
+        </div>
+      </div>
+      <div class="card" style="border-left-color:#9f7aea">
+        <div class="card-title">📦 패스포트 집중</div>
+        <div class="card-content">
+          쏘카 패스포트 <strong>5월 회원 10.8만명 피크</strong>, 성수기 3개월(5~7월)에 전체의 <strong>80% 이상 집중</strong>. 성수기 이후 유지 전략 필요.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
